@@ -24,7 +24,11 @@ logger = logging.getLogger(__name__)
 async def login(request: Request):
     callback_url = str(request.url_for("callback"))
     logger.info(f"/login エンドポイントにアクセス: callback_url={callback_url}")
-    
+
+    site_name = request.query_params.get("site_name", "")
+    request.session["site_name"] = site_name
+    print(f"[login] site_name: `{site_name}`")
+
     auth_url = google_auth.login(callback_url=callback_url)
     logger.info(f"Google認証URL生成: {auth_url}")
 
@@ -65,7 +69,6 @@ async def callback(request: Request):
         callback_url=callback_url
     )
     
-
     if error:
         logger.error(f"Google認証エラー: {error}")
         raise HTTPException(status_code=400, detail=error)
@@ -76,4 +79,6 @@ async def callback(request: Request):
     request.session["user"] = {"id": user.id, "name": user.name, "email": user.email}
     logger.debug(f"セッションにユーザー情報を保存しました: {request.session['user']}")
 
-    return RedirectResponse(url="/")
+    site_name = request.session["site_name"]
+    print(f"[callback] site_name: {site_name}")
+    return RedirectResponse(url=f"/{site_name}")
