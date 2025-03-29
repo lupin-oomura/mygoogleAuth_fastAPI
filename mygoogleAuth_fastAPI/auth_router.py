@@ -41,7 +41,10 @@ async def logout(request: Request):
     if user_info:
         google_auth.logout()
     request.session.clear()
-    return RedirectResponse(url="/")
+
+    site_name = request.query_params.get("site_name", "/")
+    print(f"[logout] site_name: `{site_name}`")
+    return RedirectResponse(url=f"{site_name}")
 
 @router.get("/login/callback")
 async def callback(request: Request):
