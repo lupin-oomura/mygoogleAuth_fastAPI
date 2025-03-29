@@ -142,7 +142,7 @@ class mygoogleAuth_fastAPI_core:
             if not userinfo.get("email_verified"):
                 return None, "ユーザーのメールが利用できないか、Googleによって確認されていません。"
 
-        elif self.auth_type == "line":
+        elif self.auth_type == "LINE":
             # LINE用の処理
             token_data = {
                 "grant_type": "authorization_code",
@@ -180,7 +180,7 @@ class mygoogleAuth_fastAPI_core:
 
     def login_by_line(self, redirect_uri: str, state: str = "abcde"):
         """LINE認証開始URLを生成して返す"""
-        self.auth_type = "line"
+        self.auth_type = "LINE"
         self.LINE_REDIRECT_URI = redirect_uri
         line_auth_url = (
             f"{self.LINE_LOGIN_URL}?response_type=code"

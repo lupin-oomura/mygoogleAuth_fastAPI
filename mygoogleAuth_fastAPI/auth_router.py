@@ -31,8 +31,24 @@ async def login(request: Request):
 
     auth_url = google_auth.login(callback_url=callback_url)
     logger.info(f"Google認証URL生成: {auth_url}")
-
     return RedirectResponse(url=auth_url)
+
+# LINE認証
+@router.get("/login_by_line")
+async def login_by_line(request: Request):
+    callback_url = str(request.url_for("callback")) + "?auth_type=LINE"
+    logger.info(f"/login エンドポイントにアクセス(LINE): callback_url={callback_url}")
+
+    site_name = request.query_params.get("site_name", "")
+    request.session["site_name"] = site_name
+    print(f"[login] site_name: `{site_name}`")
+
+    auth_url = google_auth.login_by_line(callback_url)
+    logger.info(f"LINE認証URL生成: {auth_url}")
+    return RedirectResponse(url=auth_url)
+
+
+
 
 @router.get("/logout")
 async def logout(request: Request):
@@ -49,7 +65,9 @@ async def logout(request: Request):
 @router.get("/login/callback")
 async def callback(request: Request):
     logger.debug("/login/callback エンドポイントにアクセス")
-    
+    auth_type = request.query_params.get("auth_type", "google")
+    logger.debug(f"認証タイプ: {auth_type}")
+
     # クエリパラメータから認証コードを取得
     code = request.query_params.get("code")
     logger.debug(f"受信した認証コード: {code}")
@@ -66,7 +84,7 @@ async def callback(request: Request):
     
     # Google OAuth2のコールバック処理を実行
     user, error = google_auth.callback(
-        auth_type="google",
+        auth_type=auth_type,
         code=code,
         current_url=current_url,
         callback_url=callback_url
